@@ -24,7 +24,6 @@ This project analyses and schedules a set of 7 periodic real-time tasks on a sin
 ```
 ├── generate_number/        # WCET measurement code for τ₁
 ├── chronometer/            # Timing utilities
-├── TEST/                   # Test scripts
 ├── scheduling.py           # Branch-and-Bound optimal scheduler
 └── README.md
 ```
