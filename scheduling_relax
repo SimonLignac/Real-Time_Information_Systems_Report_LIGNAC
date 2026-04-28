@@ -1,0 +1,62 @@
+
+from math import lcm
+
+tasks = [
+    {"name": "T1", "C": 0.084, "T": 10},
+    {"name": "T2", "C": 3,     "T": 10},
+    {"name": "T3", "C": 2,     "T": 20},
+    {"name": "T4", "C": 2,     "T": 20},
+    {"name": "T5", "C": 2,     "T": 40},
+    {"name": "T6", "C": 2,     "T": 40},
+    {"name": "T7", "C": 3,     "T": 80},
+]
+
+SOFT_TASK = "T5"
+hyper = 1
+for t in tasks: hyper = lcm(hyper, t["T"])
+
+jobs = []
+for task in tasks:
+    for i in range(hyper // task["T"]):
+        r = i * task["T"]
+        jobs.append({"id": f"{task['name']}_{i+1}", "task": task["name"],
+                     "C": task["C"], "release": r, "deadline": r + task["T"]})
+
+best_wait, best_sched = float("inf"), None
+
+def lb(time, remaining):
+    val, t = 0, time
+    for j in sorted(remaining, key=lambda x: x["release"]):
+        s = max(t, j["release"]); val += s - j["release"]; t = s + j["C"]
+    return val
+
+def branch(time, remaining, schedule, total_wait):
+    global best_wait, best_sched
+    if not remaining:
+        if total_wait < best_wait: best_wait = total_wait; best_sched = schedule[:]
+        return
+    if total_wait + lb(time, remaining) >= best_wait: return
+    ready = [j for j in remaining if j["release"] <= time]
+    if not ready:
+        branch(min(j["release"] for j in remaining), remaining, schedule, total_wait)
+        return
+    for job in sorted(ready, key=lambda x: x["deadline"]):
+        finish = time + job["C"]
+        tardiness = max(0, finish - job["deadline"])
+        if job["task"] != SOFT_TASK and finish > job["deadline"]: continue
+        idx = remaining.index(job)
+        branch(finish, remaining[:idx]+remaining[idx+1:],
+               schedule+[{"Job": job["id"], "Task": job["task"], "Start": time,
+                          "Finish": finish, "Deadline": job["deadline"],
+                          "Waiting": time-job["release"], "Tardiness": tardiness}],
+               total_wait + time - job["release"])
+
+branch(0, jobs, [], 0)
+
+print(f"\n===== RELAXED T5 =====")
+missed = [r for r in best_sched if r["Tardiness"] > 0]
+print(f"W'               = {best_wait:.3f} ms")
+print(f"Improvement      = {82.184 - best_wait:.3f} ms")
+print(f"T5 missed        = {len(missed)} jobs")
+for r in missed:
+    print(f"  {r['Job']}  finish={r['Finish']:.3f}  deadline={r['Deadline']}  tardiness={r['Tardiness']:.3f} ms")
