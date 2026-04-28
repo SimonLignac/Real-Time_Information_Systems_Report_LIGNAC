@@ -69,14 +69,4 @@ python scheduling.py
 python scheduling_relax_t5.py
 ```
 
-No external dependencies — standard library only (Python 3.8+).
 
----
-
-## References
-
-- C.L. Liu and J.W. Layland, *Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment*, Journal of the ACM, 1973.
-- G. Buttazzo, *Hard Real-Time Computing Systems*, 3rd ed., Springer, 2011.
-
-
----
